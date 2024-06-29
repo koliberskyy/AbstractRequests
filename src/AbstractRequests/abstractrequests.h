@@ -32,8 +32,8 @@ public:
     /*
      * Отправляет GET запрос, в идеале тип аргументов - QString
     */
-    template<typename Host_str, typename Path_str, typename Query_str, typename UsrInfo_str>
-    void sendGet(Host_str host, Path_str path, Query_str query, UsrInfo_str userInfo, QString scheme = "https")
+    template<typename Host_str, typename Path_str, typename Query_str>
+    void sendGet(Host_str host, Path_str path, Query_str query, QString scheme = "https")
     {
         QUrl url;
 
@@ -41,7 +41,6 @@ public:
         url.setHost(std::forward<Host_str>(host));
         url.setPath(std::forward<Path_str>(path));
         url.setQuery(std::forward<Query_str>(query));
-        url.setUserInfo(std::forward<UsrInfo_str>(userInfo));
 
         GET(QNetworkRequest(std::move(url)));
     }
