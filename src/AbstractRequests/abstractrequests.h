@@ -61,6 +61,24 @@ public:
         POST(QNetworkRequest(std::move(url)), std::move(data));
     }
 
+    template<typename Host_str, typename Path_str>
+    void sendPost(Host_str host, Path_str path, QByteArray &&data, QString scheme = "https",
+				  std::vector<std::pair<QByteArray,QByteArray>> &headers)
+    {
+        QUrl url;
+
+        url.setScheme(scheme);
+        url.setHost(std::forward<Host_str>(host));
+        url.setPath(std::forward<Path_str>(path));
+
+		QNetworkRequest request(std::move(url));
+		for(const auto &it : headers)
+		{
+			request.setRawHeader(it.first(), it.second());
+		}
+
+        POST(std::move(request), std::move(data));
+    }
 signals:
     /*
     * Отправляется после окончания обработки ответа от сервера
