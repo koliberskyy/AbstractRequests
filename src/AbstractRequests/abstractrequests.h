@@ -9,7 +9,6 @@
 /*
  * Обертка над QNetworkRequests действительно позволяющая использовать 1 QNetworkAccessManager на весь проект
  * Наследуем куда надо, в конструктор передаем shared_ptr на созданный QNetworkAccessManager (или нет)
- * В поле userInfo отправляемого запроса указывваем информацию которую используем для определения метода парсинга ответа
 */
 class AbstractRequests : public QObject
 {
@@ -17,7 +16,8 @@ class AbstractRequests : public QObject
     std::shared_ptr<QNetworkAccessManager> manager;
 
 public:
-    explicit AbstractRequests(std::shared_ptr<QNetworkAccessManager> __manager = nullptr, QObject *parent = nullptr): QObject(parent)
+    explicit AbstractRequests(std::shared_ptr<QNetworkAccessManager> __manager = nullptr, QObject *parent = nullptr)
+	: QObject(parent)
     {
         if(__manager == nullptr){
             manager = std::make_shared<QNetworkAccessManager>();
@@ -45,7 +45,21 @@ public:
         GET(QNetworkRequest(std::move(url)));
     }
 
+    //POST
+    /*
+     * Отправляет POST запрос, в идеале тип аргументов - QString
+    */
+    template<typename Host_str, typename Path_str>
+    void sendPost(Host_str host, Path_str path, QByteArray &&data, QString scheme = "https")
+    {
+        QUrl url;
 
+        url.setScheme(scheme);
+        url.setHost(std::forward<Host_str>(host));
+        url.setPath(std::forward<Path_str>(path));
+
+        POST(QNetworkRequest(std::move(url)), std::move(data));
+    }
 
 signals:
     /*
@@ -72,6 +86,14 @@ private:
         QObject::connect(reply, &QNetworkReply::finished,
                          this, &AbstractRequests::replyFinished);
     }
+    
+	void POST(QNetworkRequest &&request, QByteArray &&data) 
+    {
+        auto reply = manager->post(std::move(request), std::move(data));
+        QObject::connect(reply, &QNetworkReply::finished,
+                         this, &AbstractRequests::replyFinished);
+    }
+
 
 };
 
